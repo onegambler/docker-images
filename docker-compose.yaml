@@ -34,8 +34,8 @@ services:
       - "58846:58846"
       - "8112:8112"
     volumes:
-      - /home/pi/.deluge/config:/volumes/config
-      - /home/pi/.deluge/torrents:/volumes/data
+      - /mnt/extHD/raspberrypi/configs/deluge/config:/volumes/config
+      - /mnt/extHD/raspberrypi/configs/deluge/torrents:/volumes/data
       - /mnt/extHD/download/complete:/volumes/complete
       - /mnt/extHD/download/incomplete/torrent:/volumes/download
 
@@ -53,7 +53,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /mnt/extHD/download/complete:/download
-      - /home/pi/.jackett:/config # config files
+      - /mnt/extHD/raspberrypi/configs/jackett:/config # config files
 
   sonarr:
     container_name: sonarr
@@ -69,7 +69,7 @@ services:
       - "8989:8989"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /home/pi/.sonarr/config:/config
+      - /mnt/extHD/raspberrypi/configs/sonarr/config:/config
       - /mnt/extHD/Roberto/media/series:/tv
       - /mnt/extHD/download/complete:/downloads
     depends_on:
@@ -90,7 +90,7 @@ services:
       - "7878:7878"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /home/pi/.radarr/config:/config
+      - /mnt/extHD/raspberrypi/configs/radarr/config:/config
       - /mnt/extHD/Roberto/media/movies:/movies
       - /mnt/extHD/download/complete:/downloads
     depends_on:
