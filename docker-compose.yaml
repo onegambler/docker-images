@@ -16,7 +16,9 @@ services:
     volumes:
       - /mnt/extHD/:/share/
     command: 
-
+      -u "roberto:${ROBERTO_PASSWORD}"
+      -u "jenny:${JENNY_PASSWORD}"
+      -s "NAS:/share/:rw:roberto,jenny"
   deluge:
     container_name: "deluge"
     build:
@@ -32,8 +34,8 @@ services:
       - "58846:58846"
       - "8112:8112"
     volumes:
-      - /home/deluge/.deluge/config/config:/volumes/config
-      - /home/deluge/.deluge/torrents:/volumes/data
+      - /home/pi/.deluge/config:/volumes/config
+      - /home/pi/.deluge/torrents:/volumes/data
       - /mnt/extHD/download/complete:/volumes/complete
       - /mnt/extHD/download/incomplete/torrent:/volumes/download
 
@@ -60,9 +62,9 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - PUID=1000 # default user id, for downloaded files access rights
-      - PGID=1000 # default group id, for downloaded files access rights
-      - TZ=Europe/London # timezone
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
     ports:
       - "8989:8989"
     volumes:
@@ -72,17 +74,18 @@ services:
       - /mnt/extHD/download/complete:/downloads
     depends_on:
       - jackett
+      - deluge
 
   radarr:
     container_name: radarr
     image: lsioarmhf/radarr
-    # build: ./sonarr
+    # build: ./radarr
     restart: unless-stopped
     network_mode: host
     environment:
-      - PUID=1000 # default user id, for downloaded files access rights
-      - PGID=1000 # default group id, for downloaded files access rights
-      - TZ=Europe/London # timezone
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
     ports:
       - "7878:7878"
     volumes:
@@ -92,3 +95,4 @@ services:
       - /mnt/extHD/download/complete:/downloads
     depends_on:
       - jackett
+      - deluge
