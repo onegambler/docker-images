@@ -69,7 +69,7 @@ services:
       - "8989:8989"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /mnt/extHD/raspberrypi/configs/sonarr/config:/config
+      - /mnt/extHD/raspberrypi/configs/sonarr:/config
       - /mnt/extHD/Roberto/media/series:/tv
       - /mnt/extHD/download/complete:/downloads
     depends_on:
@@ -90,9 +90,33 @@ services:
       - "7878:7878"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /mnt/extHD/raspberrypi/configs/radarr/config:/config
+      - /mnt/extHD/raspberrypi/configs/radarr:/config
       - /mnt/extHD/Roberto/media/movies:/movies
       - /mnt/extHD/download/complete:/downloads
     depends_on:
       - jackett
       - deluge
+    
+  portainer:
+    image: portainer/portainer:arm
+    container_name: portainer
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/extHD/raspberrypi/configs/portainer:/data
+
+  muximux:
+    image: lsioarmhf/muximux
+    container_name: muximux
+    hostname: dash
+    volumes:
+        - /Config/Muximux_Config:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    restart: unless-stopped
+    depends_on:
+        - sonarr
+        - radarr
+        - deluge
