@@ -1,4 +1,4 @@
-mkdir -p /mnt/extHD/raspberrypi/configs/{muximux,portainer,radarr,sonarr,jackett}/config
+mkdir -p /mnt/extHD/raspberrypi/configs/{muximux,portainer,radarr,sonarr,jackett}
 chown -R pi:pi /mnt/extHD/docker
 
 ### Installing nfs

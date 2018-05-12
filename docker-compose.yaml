@@ -101,6 +101,8 @@ services:
     image: portainer/portainer:arm
     container_name: portainer
     restart: unless-stopped
+    ports:
+      - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /mnt/extHD/raspberrypi/configs/portainer:/data
@@ -110,12 +112,14 @@ services:
     container_name: muximux
     hostname: dash
     volumes:
-        - /Config/Muximux_Config:/config
+        - /mnt/extHD/raspberrypi/configs/muximux:/config
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/London
     restart: unless-stopped
+    ports:
+      - "80:80"
     depends_on:
         - sonarr
         - radarr
