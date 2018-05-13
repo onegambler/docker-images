@@ -39,6 +39,31 @@ services:
       - /mnt/extHD/download/complete:/volumes/complete
       - /mnt/extHD/download/incomplete/torrent:/volumes/download
 
+  mldonkey:
+    container_name: "mldonkey"
+    build:
+      context: ./mldonkey
+      args:
+        - PUID=1000
+        - PGID=1000
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/London # timezone
+      - MLDONKEY_CLIENT_NAME=raspberrypi
+    ports:
+      - "4000:4000"
+      - "4080:4080"
+      - "20562:20562"
+      - "20566:20566/udp"
+      - "16965:16965/udp"
+      - "3617:3617/udp"
+      - "6881:6881"
+      - "6882:6882"
+    volumes:
+      - /mnt/extHD/raspberrypi/configs/mldonkey:/var/lib/mldonkey
+      - /mnt/extHD/download/complete:/download/complete
+      - /mnt/extHD/download/incomplete/torrent:/download/incomplete
+
   jackett:
     container_name: jackett
     image: lsioarmhf/jackett

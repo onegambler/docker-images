@@ -36,9 +36,9 @@ VOLUME /volumes/download
 VOLUME /volumes/complete
 
 # Add the setup script.
-ADD setup.sh /setup.sh
+ADD run.sh /run.sh
 ADD config /tmp/config
-RUN chmod a+x /setup.sh
+RUN chmod a+x /run.sh
 
 # Run the setup script on boot.
-CMD ["/setup.sh"]
+CMD ["/run.sh"]

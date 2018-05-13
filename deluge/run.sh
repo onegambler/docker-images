@@ -6,16 +6,8 @@ DOWNLOAD_DIR=/volumes/download
 COMPLETE_DIR=/volumes/complete
 
 echo "Creating config and data directories."
-# mkdir -p $CONFIGDIR
-# mkdir -p -m 777 $DATADIR
-# mkdir -p -m 777 $DOWNLOAD_DIR
-# mkdir -p -m 777 $COMPLETE_DIR
 mkdir -p -m 777 /volumes/{$CONFIGDIR,$DATADIR,$DOWNLOAD_DIR,$COMPLETE_DIR}
-# chown -R deluge $CONFIGDIR
 chown -R deluge /volumes
-# chown deluge $DATADIR
-# chown deluge $COMPLETE_DIR
-# chown deluge $DOWNLOAD_DIR
 
 if [ ! -d $CONFIGDIR ]; then
         echo "The config directory does not exist! Please add it as a volume."
