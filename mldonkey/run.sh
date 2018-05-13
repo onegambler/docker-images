@@ -22,7 +22,7 @@ if [ ! -f /var/lib/mldonkey/downloads.ini ]; then
     /usr/lib/mldonkey/mldonkey_command -p "" "set enable_fasttrack false" "save"
     /usr/lib/mldonkey/mldonkey_command -p "" "set enable_directconnect false" "save"
     /usr/lib/mldonkey/mldonkey_command -p "" "set enable_fileTP false" "save"
-    /usr/lib/mldonkey/mldonkey_command -p "" "set ED2K-connect_only_preferred_server true" "save"
+    /usr/lib/mldonkey/mldonkey_command -p "" "set ED2K-connect_only_preferred_server false" "save"
     /usr/lib/mldonkey/mldonkey_command -p "" "set client_name $MLDONKEY_CLIENT_NAME" "save"
     /usr/lib/mldonkey/mldonkey_command -p "" "set max_hard_upload_rate 10" "save"
     /usr/lib/mldonkey/mldonkey_command -p "" "set max_hard_download_rate 0" "save"
@@ -50,6 +50,13 @@ if [ ! -f /var/lib/mldonkey/downloads.ini ]; then
         /usr/lib/mldonkey/mldonkey_command -p "" "useradd admin $MLDONKEY_ADMIN_PASSWORD"
         /usr/lib/mldonkey/mldonkey_command -u admin -p "$MLDONKEY_ADMIN_PASSWORD" "kill"
     fi
+    
+    # Overnet & Kad ports can't be changed from the command, too bad mldonkey!!!!
+    # First port is for overnet, second for kad, then we leave all the same
+    # sed -i '0,/   port =/s/   port =.*/  port = 6209/' /var/lib/mldonkey/donkey.ini
+    sed -i '0,/   port =/s/   port =.*/  port = 16965/' /var/lib/mldonkey/donkey.ini
+    sed -i 's/  port =/   port =/' /var/lib/mldonkey/donkey.ini
+
 fi
 
 

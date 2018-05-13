@@ -38,7 +38,6 @@ services:
       - /mnt/extHD/raspberrypi/configs/deluge/torrents:/volumes/data
       - /mnt/extHD/download/complete:/volumes/complete
       - /mnt/extHD/download/incomplete/torrent:/volumes/download
-
   mldonkey:
     container_name: "mldonkey"
     build:
@@ -50,6 +49,7 @@ services:
     environment:
       - TZ=Europe/London # timezone
       - MLDONKEY_CLIENT_NAME=raspberrypi
+      - MLDONKEY_ADMIN_PASSWORD=${MLDONKEY_ADMIN_PASSWORD}
     ports:
       - "4000:4000"
       - "4080:4080"
