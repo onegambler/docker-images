@@ -65,6 +65,8 @@ if [ $AUTHMISSING ]; then
         deluge-console -c $CONFIGDIR "config -s autoadd_location $DATADIR"
         deluge-console -c $CONFIGDIR "plugin --enable AutoRemovePlus"
         deluge-console -c $CONFIGDIR "plugin --enable Label"
+        deluge-console "config --set listen_ports ($PORT $PORT)"
+        deluge-console -c $CONFIGDIR "config -s listen_ports (30000, 30000)"
         
         # Stop deluged.
         pkill deluged

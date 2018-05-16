@@ -27,7 +27,7 @@ RUN rm deluge-${DELUGE_VERSION}.tar.gz
 RUN cd deluge-${DELUGE_VERSION}; python setup.py build; python setup.py install
 
 # Expose the deluge control port and the web UI port.
-EXPOSE 58846 8112
+EXPOSE 58846 8112 30000
 
 # Setup volumes.
 VOLUME /volumes/config
