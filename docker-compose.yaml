@@ -2,9 +2,9 @@ version: '3'
 services:
   samba:
     container_name: samba
-    image: dastrasmue/rpi-samba:v3
+    image: dastrasmue/rpi-samba:latest
     restart: unless-stopped
-    network_mode: "host"
+    # network_mode: "host"
     ports:
       - "137:137/tcp"
       - "137:137/udp"
@@ -18,7 +18,7 @@ services:
     command: 
       -u "roberto:${ROBERTO_PASSWORD}"
       -u "jenny:${JENNY_PASSWORD}"
-      -s "NAS:/share/:rw:roberto,jenny"
+      -s "HASS:/share/:rw:roberto,jenny"
       
   deluge:
     container_name: "deluge"
