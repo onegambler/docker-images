@@ -134,20 +134,42 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /mnt/extHD/raspberrypi/configs/portainer:/data
 
-  muximux:
-    image: lsioarmhf/muximux
-    container_name: muximux
-    hostname: dash
+  # muximux:
+  #   image: lsioarmhf/muximux
+  #   container_name: muximux
+  #   hostname: dash
+  #   volumes:
+  #       - /mnt/extHD/raspberrypi/configs/muximux:/config
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Europe/London
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #       - sonarr
+  #       - radarr
+  #       - deluge
+  organizr:
+    image: lsioarmhf/organizr:latest
+    container_name: organizr
     volumes:
-        - /mnt/extHD/raspberrypi/configs/muximux:/config
+      - /home/pi/docker/organizr:/config
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/London
-    restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
         - sonarr
         - radarr
         - deluge
+
+  watchtower:
+    image: v2tec/watchtower:armhf-latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/pi/docker/watchtower/config.json:/config.json
