@@ -17,7 +17,7 @@ ARG PGID=1000
 ARG PUID=1000
 
 # Setup a user.
-RUN usermod -u ${PGID} mldonkey
+RUN usermod -u ${PUID} mldonkey
 RUN groupmod -g ${PGID} mldonkey
 
 EXPOSE 4000 4080 20562 20566/udp 16965/udp 3617/udp 6881 6882

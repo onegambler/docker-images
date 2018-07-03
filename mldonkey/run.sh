@@ -1,6 +1,10 @@
 #!/bin/sh
 
 if [ ! -f /var/lib/mldonkey/downloads.ini ]; then
+    userdel -f mldonkey
+    groupdel mldonkey
+    groupadd -g $PGID mldonkey
+    useradd -M -u $PUID -g $PGID -d /var/lib/mldonkey mldonkey
     mldonkey &
     echo "Waiting for mldonkey to start..."
     sleep 5
@@ -58,7 +62,6 @@ if [ ! -f /var/lib/mldonkey/downloads.ini ]; then
     sed -i 's/  port =/   port =/' /var/lib/mldonkey/donkey.ini
 
 fi
-
 
 chown -R mldonkey:mldonkey /var/lib/mldonkey
 chown -R mldonkey:mldonkey /download/complete
