@@ -13,12 +13,8 @@ VOLUME /var/lib/mldonkey
 VOLUME /download/incomplete
 VOLUME /download/complete
 
-ARG PGID=1000
-ARG PUID=1000
-
-# Setup a user.
-RUN usermod -u ${PUID} mldonkey
-RUN groupmod -g ${PGID} mldonkey
+ENV PGID=1000
+ENV PUID=1000
 
 EXPOSE 4000 4080 20562 20566/udp 16965/udp 3617/udp 6881 6882
 
