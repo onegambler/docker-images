@@ -1,114 +1,105 @@
+import logging
 import os
-import subprocess
-import json
-from subprocess import Popen, PIPE
+import sys
+from logging.config import fileConfig
 
-#The directory to sync
-syncdir="/data"
-#Path to the Dropbox-uploaded shell script
-uploader = "/bin/dropbox/dropbox_uploader.sh"
+import dropbox
+from dropbox.exceptions import AuthError
+from dropbox.files import FileMetadata, FolderMetadata, DeleteArg
+from pathspec import PathSpec
+from pathspec.patterns import GitWildMatchPattern
 
-#If 1 then files will be uploaded. Set to 0 for testing
-upload = 1
-#If 1 then don't check to see if the file already exists just upload it, if 0 don't upload if already exists
-overwrite = 0
-#If 1 then crawl sub directories for files to upload
-recursive = 1
-#Delete local file on successfull upload
-deleteLocal = 0
+from hasher import DropboxContentHasher
 
-filesToExclude = json.loads(os.environ['FILES_TO_EXCLUDE'])
-dirsToExclude = json.loads(os.environ['DIRS_TO_EXCLUDE'])
+dbx = dropbox.Dropbox(os.environ['DROPBOX_KEY'])
+# SYNC_DIR = "/data"
+SYNC_DIR = "D:\\TO_DELETE"
 
-#Prints indented output
-def print_output(msg, level):
-    print((" " * level * 2) + msg)
+to_exclude_env_value = os.environ.get('TO_EXCLUDE')
+TO_EXCLUDE = [] if not to_exclude_env_value else to_exclude_env_value.split(',')
 
+fileConfig('logging_config.ini')
+logger = logging.getLogger()
 
-#Gets a list of files in a dropbox directory
-def list_files(path):
-    p = Popen([uploader, "list", path], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output = p.communicate()[0].decode("utf-8")
+spec = PathSpec.from_lines(GitWildMatchPattern, TO_EXCLUDE)
 
-    fileList = list()
-    lines = output.splitlines()
-
-    for line in lines:
-        if line.startswith(" [F]"):
-            line = line[5:]
-            line = line[line.index(' ')+1:]
-            fileList.append(line)
-
-    return fileList
+# Check that the access token is valid
+try:
+    dbx.users_get_current_account()
+except AuthError as err:
+    sys.exit("ERROR: Invalid access token; try re-generating an "
+             "access token from the app console on the web.")
 
 
-#Uploads a single file
-def upload_file(localPath, remotePath):
-    p = Popen([uploader, "upload", localPath, remotePath], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output = p.communicate()[0].decode("utf-8").strip()
-    print(output)
-    if output.startswith("> Uploading") and output.endswith("DONE"):
-        return 1
-    else:
-        return 0
+def _get_content_hash(path):
+    hasher = DropboxContentHasher()
+    with open(path, 'rb') as f:
+        while True:
+            chunk = f.read(1024)  # or whatever chunk size you want
+            if len(chunk) == 0:
+                break
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 
-#Uploads files in a directory
-def upload_files(path, level):
-    fullpath = os.path.join(syncdir,path)
-    print_output("Syncing " + fullpath,level)
-    if not os.path.exists(fullpath):
-        print_output("Path not found: " + path, level)
-    else:
+def _upload_file(file_path):
+    with open(os.path.join(SYNC_DIR, file_path), 'rb') as file:
+        dbx.files_upload(file.read(), _get_dropbox_path(file_path))
 
-        #Get a list of file/dir in the path
-        filesAndDirs = os.listdir(fullpath)
 
-        #Group files and directories
+def _get_dropbox_path(original_path):
+    if not original_path:
+        return ''
+    return '/' + original_path.replace('\\', '/')
 
-        files = list()
-        dirs = list()
 
-        for file in filesAndDirs:
-            filepath = os.path.join(fullpath,file)
-            if os.path.isfile(filepath):
-                files.append(file)
-            if os.path.isdir(filepath):
-                dirs.append(file)
+def scan_folder(path):
+    local_files = []
+    local_folders = []
+    logger.debug('Scanning {root}'.format(root=os.path.join(SYNC_DIR, path)))
+    # getting all files and folders in local
+    for entry in os.listdir(os.path.join(SYNC_DIR, path)):
+        entry_path = os.path.join(SYNC_DIR, path, entry)
+        if not spec.match_file(entry_path):
+            if os.path.isfile(entry_path):
+                local_files.append(os.path.join(path, entry))
+            if os.path.isdir(entry_path):
+                local_folders.append(os.path.join(path, entry))
+    dropbox_files = []
+    dropbox_folders = []
+    # getting all files and folders in dropbox
 
-        print_output(str(len(files)) + " Files, " + str(len(dirs)) + " Directories",level)
-
-        #If the path contains files and we don't want to override get a list of files in dropbox
-        if len(files) > 0 and overwrite == 0:
-            dfiles = list_files(path)
-
-        #Loop through the files to check to upload
-        for f in files:
-            if f not in filesToExclude:
-                print_output("Found File: " + f,level)
-                if upload == 1 and (overwrite == 1 or not f in dfiles):
-                    fullFilePath = os.path.join(fullpath,f)
-                    relativeFilePath = os.path.join(path,f)
-                    print_output("Uploading File: " + f,level+1)
-                    if upload_file(fullFilePath, relativeFilePath) == 1:
-                        print_output("Uploaded File: " + f,level + 1)
-                        if deleteLocal == 1:
-                            print_output("Deleting File: " + f,level + 1)
-                            os.remove(fullFilePath)
-                    else:
-                        print_output("Error Uploading File: " + f,level + 1)
+    for entry in dbx.files_list_folder(_get_dropbox_path(path)).entries:
+        if isinstance(entry, FileMetadata):
+            dropbox_files.append(entry)
+        if isinstance(entry, FolderMetadata):
+            dropbox_folders.append(entry)
+    logger.debug('\tFound the following local files [{list}]'.format(list=', '.join(local_files)))
+    logger.debug('\tFound the following local folders [{list}]'.format(list=', '.join(local_folders)))
+    files_to_delete = [file for file in dropbox_files if file.path_display[1:] not in local_files]
+    folders_to_delete = [folder for folder in dropbox_folders if folder.path_display[1:] not in local_folders]
+    dbx.files_delete_batch([DeleteArg(to_delete.path_lower) for to_delete in files_to_delete + folders_to_delete])
+    for file in local_files:
+        match = next(
+            (
+                dropbox_file
+                for dropbox_file in dropbox_files if _get_dropbox_path(file) == dropbox_file.path_display
+            ), None)
+        if match:
+            local_file_hash = _get_content_hash(os.path.join(SYNC_DIR, file))
+            if local_file_hash != match.content_hash:
+                logger.debug('\t\tFile \'{file}\' exists but hashes don\'t match. Overriding'.format(file=file))
+                _upload_file(file)
             else:
-                print_output("filesToExclude: " + f,level)
+                logger.debug('\t\tFile \'{file}\' exists and is up to date, skipping'.format(file=file))
+        else:
+            logger.debug('\t\tNew file \'{file}\'. Uploading'.format(file=file))
+            _upload_file(file)
+    for folder in local_folders:
+        if not any(dropbox_folder for dropbox_folder in dropbox_folders if folder == dropbox_folder.path_display[1:]):
+            dbx.files_create_folder_v2(_get_dropbox_path(folder))
+            logger.debug('\t\tCreated folder {folder}'.format(folder=folder))
+        scan_folder(folder)
 
-        #If recursive loop through the directories
-        if recursive == 1:
-            for d in dirs:
-                if d not in dirsToExclude:
-                    print_output("Found Directory: " + d, level)
-                    relativePath = os.path.join(path,d)
-                    upload_files(relativePath, level + 1)
-                else:
-                    print_output("dirsToExclude: " + d,level)
 
-#Start
-upload_files("",1)
+scan_folder("")
