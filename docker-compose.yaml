@@ -19,6 +19,8 @@ services:
       -u "roberto:${ROBERTO_PASSWORD}"
       -u "jenny:${JENNY_PASSWORD}"
       -s "NAS:/share/:rw:roberto,jenny"
+    logging:
+      driver: none
       
   deluge:
     container_name: "deluge"
@@ -39,6 +41,8 @@ services:
       - /mnt/extHD/raspberrypi/configs/deluge/torrents:/volumes/data
       - /mnt/extHD/download/complete:/volumes/complete
       - /mnt/extHD/download/incomplete/torrent:/volumes/download
+    logging:
+      driver: none
 
   mldonkey:
     container_name: "mldonkey"
@@ -64,6 +68,8 @@ services:
       - /mnt/extHD/raspberrypi/configs/mldonkey:/var/lib/mldonkey
       - /mnt/extHD/download/complete:/download/complete
       - /mnt/extHD/download/incomplete/torrent:/download/incomplete
+    logging:
+      driver: none
 
   jackett:
     container_name: jackett
@@ -80,6 +86,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /mnt/extHD/download/complete:/download
       - /mnt/extHD/raspberrypi/configs/jackett:/config # config files
+    logging:
+      driver: none
 
   sonarr:
     container_name: sonarr
@@ -101,6 +109,8 @@ services:
     depends_on:
       - jackett
       - deluge
+    logging:
+      driver: none
 
   radarr:
     container_name: radarr
@@ -122,6 +132,8 @@ services:
     depends_on:
       - jackett
       - deluge
+    logging:
+      driver: none
     
   portainer:
     image: portainer/portainer:arm
@@ -132,6 +144,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /mnt/extHD/raspberrypi/configs/portainer:/data
+    logging:
+      driver: none
 
   organizr:
     image: lsioarmhf/organizr:latest
@@ -149,8 +163,28 @@ services:
         - sonarr
         - radarr
         - deluge
+    logging:
+      driver: none
 
+  resilio-sync:
+    image: lsioarmhf/resilio-sync:latest
+    container_name: resilio-sync
+    ports:
+      - "8888:8888"
+      - "55555:55555"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - UMASK_SET=022
+    volumes:
+      - /mnt/extHD/raspberrypi/configs/resilio/config:/config
+      - /mnt/extHD/raspberrypi/configs/resilio/downloads:/downloads
+      - /mnt/extHD/Roberto/media:/sync
+      
   watchtower:
     image: v2tec/watchtower:armhf-latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: none
