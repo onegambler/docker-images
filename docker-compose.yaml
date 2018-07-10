@@ -180,7 +180,7 @@ services:
     volumes:
       - /mnt/extHD/raspberrypi/configs/resilio/config:/config
       - /mnt/extHD/raspberrypi/configs/resilio/downloads:/downloads
-      - /mnt/extHD/Roberto/media:/sync
+      - /mnt/extHD/Roberto:/sync
       
   watchtower:
     image: v2tec/watchtower:armhf-latest
