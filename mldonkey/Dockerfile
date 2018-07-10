@@ -13,9 +13,6 @@ VOLUME /var/lib/mldonkey
 VOLUME /download/incomplete
 VOLUME /download/complete
 
-ENV PGID=1000
-ENV PUID=1000
-
 EXPOSE 4000 4080 20562 20566/udp 16965/udp 3617/udp 6881 6882
 
 COPY run.sh /run.sh
