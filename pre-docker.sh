@@ -1,7 +1,7 @@
 ### Install docker
 #curl -fsSL get.docker.com -o get-docker.sh && sh get-docker.sh
 
-sudo apt-get update && sudo apt-get upgrade
+sudo apt-get update && sudo apt-get -y upgrade
 sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
 curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
 echo "deb [arch=armhf] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
@@ -13,16 +13,21 @@ pip install docker-compose
 sudo groupadd docker
 sudo usermod -aG docker $USER
 
-mkdir -p /mnt/extHD/raspberrypi/configs/{muximux,portainer,radarr,sonarr,jackett,mldonkey}
-chown -R pi:pi /mnt/extHD/raspberrypi
+#Automount harddrive
+sudo mount -t ext4 UUID=3b3e573f-f3b5-410c-841a-0ee9949925f7 /mnt/extHD
+export FSTAB_CONFIG="UUID=3b3e573f-f3b5-410c-841a-0ee9949925f7        /mnt/extHD      ext4    defaults          0       0"
+grep -q -F "$FSTAB_CONFIG" /etc/fstab || echo "$FSTAB_CONFIG" | sudo tee --append /etc/fstab > /dev/null
+
+sudo mkdir -p /mnt/extHD/raspberrypi/configs/{muximux,portainer,radarr,sonarr,jackett,mldonkey}
+sudo chown -R pi:pi /mnt/extHD/raspberrypi
 
 ### Installing nfs
-apt-get install nfs-kernel-server portmap nfs-common -y
-service nfs-server stop
+sudo apt-get install nfs-kernel-server portmap nfs-common -y
+sudo service nfs-server stop
 
 EXPORT_CONFIG="/mnt/extHD           192.168.1.0/24(rw,nohide,insecure,no_subtree_check,async,all_squash)"
-grep -q -F "$EXPORT_CONFIG" /etc/exports || echo "$EXPORT_CONFIG" >> /etc/exports
-service nfs-server start
+grep -q -F "$EXPORT_CONFIG" /etc/exports || echo "$EXPORT_CONFIG" | sudo tee --append /etc/exports > /dev/null
+sudo service nfs-server start
 
 
 DHCP_CONFIG="interface eth0
@@ -30,8 +35,5 @@ static ip_address=192.168.1.64/24
 static routers=192.168.1.254
 static domain_name_servers=1.1.1.1 1.0.0.1"
 
-grep -q -x "interface eth0" /etc/dhcpcd.conf  || echo "$DHCP_CONFIG" >> /etc/dhcpcd.conf 
+grep -q -x "interface eth0" /etc/dhcpcd.conf  || echo "$DHCP_CONFIG" | sudo tee --append  /etc/dhcpcd.conf > /dev/null
 
-#Automount harddrive
-export FSTAB_CONFIG="UUID=3b3e573f-f3b5-410c-841a-0ee9949925f7        /mnt/extHD      ext4    defaults          0       0"
-grep -q -F "$FSTAB_CONFIG" /etc/fstab || echo "$FSTAB_CONFIG" >> /etc/fstab

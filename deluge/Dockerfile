@@ -9,22 +9,20 @@ ARG PGID=1000
 ARG PUID=1000
 
 # Setup a user.
-RUN addgroup --gid ${PGID} deluge 
-RUN adduser --system --ingroup deluge --uid ${PUID} deluge 
-
-# Clean up.
-RUN apt-get clean
-RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN addgroup --gid ${PGID} deluge && adduser --system --ingroup deluge --uid ${PUID} deluge 
 
 # Deluge version.
 ARG DELUGE_VERSION=1.3.15
 
+# Clean up.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 # Install Deluge.
 WORKDIR /
-RUN wget http://download.deluge-torrent.org/source/deluge-${DELUGE_VERSION}.tar.gz
-RUN tar -zxvf deluge-${DELUGE_VERSION}.tar.gz
-RUN rm deluge-${DELUGE_VERSION}.tar.gz
-RUN cd deluge-${DELUGE_VERSION}; python setup.py build; python setup.py install
+RUN wget http://download.deluge-torrent.org/source/deluge-${DELUGE_VERSION}.tar.gz && /
+    tar -zxvf deluge-${DELUGE_VERSION}.tar.gz && /
+    rm deluge-${DELUGE_VERSION}.tar.gz && /
+    cd deluge-${DELUGE_VERSION}; python setup.py build; python setup.py install
 
 # Expose the deluge control port and the web UI port.
 EXPOSE 58846 8112 30000

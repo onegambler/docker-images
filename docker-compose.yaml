@@ -2,9 +2,12 @@ version: '3'
 services:
   samba:
     container_name: samba
-    image: dastrasmue/rpi-samba:latest
+    image: dperson/samba:armhf
     restart: unless-stopped
-    # network_mode: "host"
+    environment: 
+      - USERID=1000
+      - GROUPID=1000
+      - WORKGROUP=workgroup
     ports:
       - "137:137/tcp"
       - "137:137/udp"
@@ -14,22 +17,23 @@ services:
       - "445:445"
       - "445:445/udp"
     volumes:
-      - /mnt/extHD/:/share/
+      - /mnt/extHD/:/mount
     command: 
-      -u "roberto:${ROBERTO_PASSWORD}"
-      -u "jenny:${JENNY_PASSWORD}"
-      -s "NAS:/share/:rw:roberto,jenny"
+      -u "roberto;${ROBERTO_PASSWORD}"
+      -u "jenny;${JENNY_PASSWORD}"
+      -s "NAS;/mount;yes;no;no;roberto,jenny"
     logging:
       driver: none
-      
+
   deluge:
     container_name: "deluge"
-    build:
-      context: ./deluge
-      args:
-        - DELUGE_VERSION=1.3.15
-        - PUID=1000
-        - PGID=1000
+    image: onegambler/deluge:v1.0
+    # build:
+    #   context: ./deluge
+    #   args:
+    #     - DELUGE_VERSION=1.3.15
+    #     - PUID=1000
+    #     - PGID=1000
     restart: unless-stopped
     environment:
       - TZ=Europe/London # timezone
@@ -46,8 +50,9 @@ services:
 
   mldonkey:
     container_name: "mldonkey"
-    build:
-      context: ./mldonkey
+    image: onegambler/mldonkey
+    # build:
+    #   context: ./mldonkey
     restart: unless-stopped
     environment:
       - TZ=Europe/London # timezone
@@ -67,14 +72,17 @@ services:
     volumes:
       - /mnt/extHD/raspberrypi/configs/mldonkey:/var/lib/mldonkey
       - /mnt/extHD/download/complete:/download/complete
+<<<<<<< HEAD
+      - /mnt/extHD/download/incomplete/eDonkey:/download/incomplete
+=======
       - /mnt/extHD/download/incomplete/mldonkey:/download/incomplete
+>>>>>>> master
     logging:
       driver: none
 
   jackett:
     container_name: jackett
     image: lsioarmhf/jackett
-    # build: ./jackett
     restart: unless-stopped
     environment:
       - PUID=1000 # default user id, for downloaded files access rights
@@ -92,7 +100,6 @@ services:
   sonarr:
     container_name: sonarr
     image: lsioarmhf/sonarr
-    # build: ./sonarr
     restart: unless-stopped
     network_mode: host
     environment:
@@ -115,7 +122,6 @@ services:
   radarr:
     container_name: radarr
     image: lsioarmhf/radarr
-    # build: ./radarr
     restart: unless-stopped
     network_mode: host
     environment:
@@ -181,10 +187,33 @@ services:
       - /mnt/extHD/raspberrypi/configs/resilio/config:/config
       - /mnt/extHD/raspberrypi/configs/resilio/downloads:/downloads
       - /mnt/extHD/Roberto:/sync
+<<<<<<< HEAD
+    logging:
+      driver: none
+
+=======
       
+>>>>>>> master
   watchtower:
     image: v2tec/watchtower:armhf-latest
+    container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     logging:
       driver: none
+  
+  rpi-monitor:
+    container_name: rpi-monitor
+    image: michaelmiklis/rpi-monitor:latest
+    volumes: 
+      - /opt/vc:/opt/vc
+      - /boot:/boot
+      - /sys:/dockerhost/sys:ro
+      - /etc:/dockerhost/etc:ro
+      - /proc:/dockerhost/proc:ro
+      - /usr/lib:/dockerhost/usr/lib:ro
+    devices:
+      - /dev/vchiq:/dev/vchiq
+      - /dev/vcsm:/dev/vcsm
+    ports:
+      - "9999:8888"
