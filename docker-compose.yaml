@@ -72,11 +72,7 @@ services:
     volumes:
       - /mnt/extHD/raspberrypi/configs/mldonkey:/var/lib/mldonkey
       - /mnt/extHD/download/complete:/download/complete
-<<<<<<< HEAD
       - /mnt/extHD/download/incomplete/eDonkey:/download/incomplete
-=======
-      - /mnt/extHD/download/incomplete/mldonkey:/download/incomplete
->>>>>>> master
     logging:
       driver: none
 
@@ -187,13 +183,9 @@ services:
       - /mnt/extHD/raspberrypi/configs/resilio/config:/config
       - /mnt/extHD/raspberrypi/configs/resilio/downloads:/downloads
       - /mnt/extHD/Roberto:/sync
-<<<<<<< HEAD
     logging:
       driver: none
 
-=======
-      
->>>>>>> master
   watchtower:
     image: v2tec/watchtower:armhf-latest
     container_name: watchtower
