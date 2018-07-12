@@ -9,7 +9,7 @@ import dropbox
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from dropbox.exceptions import AuthError
-from dropbox.files import FileMetadata, FolderMetadata, DeleteArg
+from dropbox.files import FileMetadata, FolderMetadata, DeleteArg, WriteMode
 from pathspec import PathSpec
 from pathspec.patterns import GitWildMatchPattern
 
@@ -47,7 +47,7 @@ def _get_content_hash(path):
 
 def _upload_file(file_path):
     with open(os.path.join(SYNC_DIR, file_path), 'rb') as file:
-        dbx.files_upload(file.read(), _get_dropbox_path(file_path))
+        dbx.files_upload(file.read(), _get_dropbox_path(file_path), mode=WriteMode.overwrite)
 
 
 def _get_dropbox_path(original_path):
