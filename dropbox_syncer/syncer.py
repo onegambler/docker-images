@@ -6,11 +6,12 @@ import sys
 from logging.config import fileConfig
 
 import dropbox
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 from dropbox.exceptions import AuthError
 from dropbox.files import FileMetadata, FolderMetadata, DeleteArg
 from pathspec import PathSpec
 from pathspec.patterns import GitWildMatchPattern
-from apscheduler.schedulers.blocking import BlockingScheduler
 
 from hasher import DropboxContentHasher
 
@@ -22,7 +23,7 @@ TO_EXCLUDE = [] if not to_exclude_env_value else to_exclude_env_value.split(',')
 
 configFile = os.path.join(os.path.dirname(__file__), 'logging_config.ini')
 fileConfig(configFile)
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 spec = PathSpec.from_lines(GitWildMatchPattern, TO_EXCLUDE)
 
@@ -30,15 +31,14 @@ spec = PathSpec.from_lines(GitWildMatchPattern, TO_EXCLUDE)
 try:
     dbx.users_get_current_account()
 except AuthError as err:
-    sys.exit("ERROR: Invalid access token; try re-generating an "
-             "access token from the app console on the web.")
+    sys.exit("ERROR: Invalid access token; try re-generating an access token from the app console on the web.")
 
 
 def _get_content_hash(path):
     hasher = DropboxContentHasher()
     with open(path, 'rb') as f:
         while True:
-            chunk = f.read(1024)  # or whatever chunk size you want
+            chunk = f.read(1024)
             if len(chunk) == 0:
                 break
             hasher.update(chunk)
@@ -70,13 +70,14 @@ def scan_folder(path=""):
                 local_folders.append(os.path.join(path, entry))
     dropbox_files = []
     dropbox_folders = []
-    # getting all files and folders in dropbox
 
+    # getting all files and folders in dropbox
     for entry in dbx.files_list_folder(_get_dropbox_path(path)).entries:
         if isinstance(entry, FileMetadata):
             dropbox_files.append(entry)
         if isinstance(entry, FolderMetadata):
             dropbox_folders.append(entry)
+
     logger.debug('\tFound the following local files [{list}]'.format(list=', '.join(local_files)))
     logger.debug('\tFound the following local folders [{list}]'.format(list=', '.join(local_folders)))
     files_to_delete = [file for file in dropbox_files if file.path_display[1:] not in local_files]
@@ -104,9 +105,12 @@ def scan_folder(path=""):
             logger.debug('\t\tCreated folder {folder}'.format(folder=folder))
         scan_folder(folder)
 
+
 if __name__ == '__main__':
+
+    cron_schedule = os.environ.get('CRON_SCHEDULE', '0 2 * * *')
     scheduler = BlockingScheduler()
-    scheduler.add_job(scan_folder, 'interval', seconds=3)
+    scheduler.add_job(scan_folder, CronTrigger.from_crontab(cron_schedule))
     print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
 
     try:
