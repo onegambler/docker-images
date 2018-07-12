@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import logging
 import os
 import sys
@@ -8,17 +10,18 @@ from dropbox.exceptions import AuthError
 from dropbox.files import FileMetadata, FolderMetadata, DeleteArg
 from pathspec import PathSpec
 from pathspec.patterns import GitWildMatchPattern
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 from hasher import DropboxContentHasher
 
 dbx = dropbox.Dropbox(os.environ['DROPBOX_KEY'])
-# SYNC_DIR = "/data"
-SYNC_DIR = "D:\\TO_DELETE"
+SYNC_DIR = "/data"
 
 to_exclude_env_value = os.environ.get('TO_EXCLUDE')
 TO_EXCLUDE = [] if not to_exclude_env_value else to_exclude_env_value.split(',')
 
-fileConfig('logging_config.ini')
+configFile = os.path.join(os.path.dirname(__file__), 'logging_config.ini')
+fileConfig(configFile)
 logger = logging.getLogger()
 
 spec = PathSpec.from_lines(GitWildMatchPattern, TO_EXCLUDE)
@@ -53,7 +56,7 @@ def _get_dropbox_path(original_path):
     return '/' + original_path.replace('\\', '/')
 
 
-def scan_folder(path):
+def scan_folder(path=""):
     local_files = []
     local_folders = []
     logger.debug('Scanning {root}'.format(root=os.path.join(SYNC_DIR, path)))
@@ -101,5 +104,12 @@ def scan_folder(path):
             logger.debug('\t\tCreated folder {folder}'.format(folder=folder))
         scan_folder(folder)
 
+if __name__ == '__main__':
+    scheduler = BlockingScheduler()
+    scheduler.add_job(scan_folder, 'interval', seconds=3)
+    print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
 
-scan_folder("")
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass

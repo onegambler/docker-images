@@ -72,11 +72,7 @@ services:
     volumes:
       - /mnt/extHD/raspberrypi/configs/mldonkey:/var/lib/mldonkey
       - /mnt/extHD/download/complete:/download/complete
-<<<<<<< HEAD
       - /mnt/extHD/download/incomplete/eDonkey:/download/incomplete
-=======
-      - /mnt/extHD/download/incomplete/mldonkey:/download/incomplete
->>>>>>> master
     logging:
       driver: none
 

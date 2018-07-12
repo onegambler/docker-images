@@ -13,7 +13,15 @@ pip install docker-compose
 sudo groupadd docker
 sudo usermod -aG docker $USER
 
-#Automount harddrive
+# Setting up aliases
+ALIASES="alias ll='ls -altr'
+dbash() { docker exec -it $(docker ps -aqf "name=$1") bash; }
+alias dps='docker ps'
+alias dprune='docker system prune'"
+
+grep -q -F "$ALIASES" /home/pi/.bash_aliases || echo "$ALIASES" > /home/pi/.bash_aliases
+
+# Automount harddrive
 sudo mount -t ext4 UUID=3b3e573f-f3b5-410c-841a-0ee9949925f7 /mnt/extHD
 export FSTAB_CONFIG="UUID=3b3e573f-f3b5-410c-841a-0ee9949925f7        /mnt/extHD      ext4    defaults          0       0"
 grep -q -F "$FSTAB_CONFIG" /etc/fstab || echo "$FSTAB_CONFIG" | sudo tee --append /etc/fstab > /dev/null

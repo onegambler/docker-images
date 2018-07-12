@@ -1,2 +1,3 @@
-dropbox>=8.4.1
+dropbox
 pathspec
+apscheduler
