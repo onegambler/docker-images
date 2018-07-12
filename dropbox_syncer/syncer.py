@@ -80,10 +80,16 @@ def scan_folder(path=""):
 
     logger.debug('\tFound the following local files [{list}]'.format(list=', '.join(local_files)))
     logger.debug('\tFound the following local folders [{list}]'.format(list=', '.join(local_folders)))
+
     files_to_delete = [file for file in dropbox_files if file.path_display[1:] not in local_files]
     folders_to_delete = [folder for folder in dropbox_folders if folder.path_display[1:] not in local_folders]
-    logger.debug('\t\tThe following folders will be deleted [{list}]'.format(list=', '.join(folders_to_delete)))
-    logger.debug('\t\tThe following files will be deleted [{list}]'.format(list=', '.join(files_to_delete)))
+
+    if logger.isEnabledFor(level=logging.DEBUG):
+        logger.debug('\t\tThe following folders will be deleted [{list}]'
+                     .format(list=', '.join([folder.path_display for folder in folders_to_delete])))
+        logger.debug('\t\tThe following files will be deleted [{list}]'
+                     .format(list=', '.join([file.path_display for file in files_to_delete])))
+
     dbx.files_delete_batch([DeleteArg(to_delete.path_lower) for to_delete in files_to_delete + folders_to_delete])
     for file in local_files:
         match = next(
