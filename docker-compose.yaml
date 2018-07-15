@@ -214,3 +214,17 @@ services:
       - /dev/vcsm:/dev/vcsm
     ports:
       - "9999:8888"
+
+  dropbox-syncer:
+    container_name: dropbox-syncer
+    image: onegambler/dropbox-syncer:latest
+    volumes:
+      - /mnt/extHD/raspberrypi/configs:/data:ro
+    restart: on-failure
+    environment:
+      - DROPBOX_KEY=${DROPBOX_ACCESS_TOKEN}
+      - TO_EXCLUDE=*.log*,*.tmp*
+      - TZ=Europe/London
+      - CRON_SCHEDULE=0 3 * * *
+    logging:
+      driver: none
