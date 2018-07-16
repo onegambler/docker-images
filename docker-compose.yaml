@@ -27,13 +27,11 @@ services:
 
   deluge:
     container_name: "deluge"
-    image: onegambler/deluge:v1.0
-    # build:
-    #   context: ./deluge
-    #   args:
-    #     - DELUGE_VERSION=1.3.15
-    #     - PUID=1000
-    #     - PGID=1000
+    # image: onegambler/deluge:latest
+    build:
+      context: ./deluge
+      args:
+        - DELUGE_VERSION=1.3.15
     restart: unless-stopped
     environment:
       - TZ=Europe/London # timezone
@@ -43,6 +41,7 @@ services:
       - "58846:58846"
       - "8112:8112"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - /mnt/extHD/raspberrypi/configs/deluge/config:/volumes/config
       - /mnt/extHD/raspberrypi/configs/deluge/torrents:/volumes/data
       - /mnt/extHD/download/complete:/volumes/complete
@@ -195,6 +194,7 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    command: --cleanup --schedule "0 0 5 * * *"
     logging:
       driver: none
   

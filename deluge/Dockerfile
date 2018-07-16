@@ -3,13 +3,7 @@
 FROM resin/rpi-raspbian:stretch
 
 # Install required packages.
-RUN apt-get update; apt-get install wget python python-twisted python-openssl python-setuptools intltool python-xdg python-chardet geoip-database python-libtorrent python-notify python-pygame python-glade2 librsvg2-common xdg-utils python-mako -y
-
-ARG PGID=1000
-ARG PUID=1000
-
-# Setup a user.
-RUN addgroup --gid ${PGID} deluge && adduser --system --ingroup deluge --uid ${PUID} deluge 
+RUN apt-get update; apt-get install wget python python-twisted python-openssl python-setuptools intltool python-xdg python-chardet geoip-database python-libtorrent python-notify python-pygame python-glade2 librsvg2-common xdg-utils python-mako -y 
 
 # Deluge version.
 ARG DELUGE_VERSION=1.3.15

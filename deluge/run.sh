@@ -5,6 +5,9 @@ DATADIR=/volumes/data
 DOWNLOAD_DIR=/volumes/download
 COMPLETE_DIR=/volumes/complete
 
+echo "Setting up user PUID and PGID"
+addgroup --gid ${PGID} deluge && adduser --system --ingroup deluge --uid ${PUID} deluge
+
 echo "Creating config and data directories."
 mkdir -p -m 777 /volumes/{$CONFIGDIR,$DATADIR,$DOWNLOAD_DIR,$COMPLETE_DIR}
 chown -R deluge /volumes
