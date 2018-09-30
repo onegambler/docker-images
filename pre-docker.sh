@@ -10,6 +10,11 @@ sudo apt-get update && sudo apt-get upgrade
 sudo apt install -y docker-ce python python-pip
 pip install docker-compose
 
+# Enable docker API
+sudo sed -i '/ExecStart/s/$/ -H tcp:\/\/0.0.0.0:/' /lib/systemd/system/docker.service
+sudo systemctl daemon-reload
+sudo systemctl restart docker.service
+
 sudo groupadd docker
 sudo usermod -aG docker $USER
 
@@ -45,3 +50,7 @@ static domain_name_servers=1.1.1.1 1.0.0.1"
 
 grep -q -x "interface eth0" /etc/dhcpcd.conf  || echo "$DHCP_CONFIG" | sudo tee --append  /etc/dhcpcd.conf > /dev/null
 
+### Install bluetooth dongle
+sudo sed -i '/ExecStart/s/$/ --noplugin=sap/' /etc/systemd/system/bluetooth.target.wants/bluetooth.service
+sudo systemctl daemon-reload
+sudo service bluetooth restart
