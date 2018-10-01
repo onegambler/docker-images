@@ -13,10 +13,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install Deluge.
 WORKDIR /
-RUN wget http://download.deluge-torrent.org/source/deluge-${DELUGE_VERSION}.tar.gz && /
-    tar -zxvf deluge-${DELUGE_VERSION}.tar.gz && /
-    rm deluge-${DELUGE_VERSION}.tar.gz && /
-    cd deluge-${DELUGE_VERSION}; python setup.py build; python setup.py install
+RUN wget http://download.deluge-torrent.org/source/deluge-${DELUGE_VERSION}.tar.gz && tar -zxvf deluge-${DELUGE_VERSION}.tar.gz && rm deluge-${DELUGE_VERSION}.tar.gz && cd deluge-${DELUGE_VERSION}; python setup.py build; python setup.py install
 
 # Expose the deluge control port and the web UI port.
 EXPOSE 58846 8112 30000
