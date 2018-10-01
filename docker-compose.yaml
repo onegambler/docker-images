@@ -233,7 +233,7 @@ services:
     container_name: ble-scanner
     image: onegambler/mqtt-ble-scanner:latest
     volumes:
-      - /home/pi/docker/mqtt-ble-scanner/config:/mqtt-ble-scanner/config
+      - /mnt/extHD/raspberrypi/configs/mqtt-ble-scanner:/mqtt-ble-scanner/config
     restart: on-failure
     network_mode: host
     privileged: true
