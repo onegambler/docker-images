@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM resin/rpi-raspbian:stretch
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y mldonkey-server && \

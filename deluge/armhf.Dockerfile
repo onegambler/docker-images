@@ -1,6 +1,6 @@
 # Sets up a Deluge server and web client.
 
-FROM debian:stretch-slim
+FROM resin/rpi-raspbian:stretch
 
 # Install required packages.
 RUN apt-get update && \ 

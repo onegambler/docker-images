@@ -1,4 +1,4 @@
-FROM alpine
+FROM armhf/alpine
 
 COPY . /var/lib/dropbox
 
