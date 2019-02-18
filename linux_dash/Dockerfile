@@ -1,9 +1,15 @@
-FROM node:alpine
+FROM alpine:latest
+# docker run --rm -ti --net=host --ipc=host --pid=host --privileged --name test alpine:latest
 
-RUN apk update && apk upgrade && apk add unzip curl
-RUN curl -k -L -o master.zip https://github.com/afaqurk/linux-dash/archive/master.zip
-RUN unzip master.zip
-WORKDIR linux-dash-master
-RUN npm install
+ENV LINUX_DASH_SERVER_PORT 8081
+EXPOSE 8081
 
-ENTRYPOINT ["node","server"]
+WORKDIR /
+RUN apk add --no-cache git nodejs nodejs-npm netcat-openbsd
+
+RUN git clone --depth 1 https://github.com/afaqurk/linux-dash.git
+
+WORKDIR /linux-dash/app/server
+RUN npm install --production
+
+CMD ["node", "index.js"]
